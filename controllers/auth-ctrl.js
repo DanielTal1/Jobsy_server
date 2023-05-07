@@ -1,0 +1,34 @@
+const user = require('../models/users-modle');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+const SECRET_KEY = process.env.SECRET_KEY
+
+module.exports = {
+    register: async (req,res) => {
+        if(await user.exists({username:req.body.username}) == true) return res.status(400).send({message:"username already exists"});
+        bcrypt.hash(req.body.password,10,async (err,hashPassword)=>{
+            if(err) return res.status(403).send({message: err.message });
+            req.body.password = hashPassword;
+            await user.create(req.body)
+            .then(result => res.status(200).send({message:"User as been added successfully",result}))
+            .catch(err => res.status(500).send({message:"error",err}))
+        })
+    },
+    login: async (req,res) =>{
+        if(user.exists(req.body.username) == false) return res.status(400).send({message:"User not exist"});
+        const {username,password} = req.body;
+        await user.findOne({username})
+        .then(userItem => bcrypt.compare(password,userItem.password,(err,isMatch)=>{
+            if (err) return res.status(400).send({message:"err try again"})
+            if(!isMatch) return res.status(403).send({message:"Invalid credentials"})
+            res.status(200).send({message:"logged in successfully"});
+            
+            // jwt.sign({...userItem},SECRET_KEY,{expiresIn:"30m"},(err,token)=>{
+            //     if(err) return res.status(400).send({message: "Error logging in user",err})
+            //     res.status(200).send({message:"logged in successfully",token});
+            // })
+        }) )
+        .catch((err)=>{res.status(500).send({message:"Error logging in user"})})
+    }
+}

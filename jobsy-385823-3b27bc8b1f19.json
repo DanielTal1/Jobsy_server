@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "jobsy-385823",
+  "private_key_id": "3b27bc8b1f19c4de5c0869f75d6a919ac055fe62",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCslLEmgWhC7O7o\ntSVrwF0gKYto4+r9V8PzJfZPoUP4JkP2wVsayDalAR8neoosXnru2gOUeAOCI1Hy\nuCOtTA3sQrjyu8rLNZ5Yklt3ZiS0DZx3VzbpoQC8MwcT9X7jWYt9D1Af8yS6GD0M\ngAnkGfmGb9RJSs/n02/k/B98BQ9RtzFwP4KimdpPWKy8RtZqoH78dTj/QyoPBB9I\naFPcWKPPWGQdjTiGC+e8g5BWGdpxZ2vWwIUg5UQmRwYeTu8ozzuNC61U5hSvZJDh\nNM8qYBmcebhWDznFhR33/QepPRSEUatrcLIhWtDl9JbnfUeZbG0rCyjBqeVl53u9\n1pKPks4BAgMBAAECggEAG5rxNzqN5d6mXHzVToYHn2Rl01JZvUpzoooY+yXNjHz6\ndBb7rq4F56DlTdhRD8XRHjGrTu1fikqCCjQgKNE4jOkjUlhtmNGr0XkfvlqNVmuy\n8nf15asGRhRXdn7XXCBvqoJvi5zF7CqCYWR9sInjGvj6WPrphKiShms50gmxKJ3E\nDtQf1rhA2WYayZraAuii/NTEQ4XsMEOlp4WjCcp5CKkhJv3hwi/siMP2+D8xeyMi\nR3zaKRU9r/SBpWuqikXD5FetzRny+TmjmUFDuptlVuOMXfrKOLdE2uxWownbCh+g\nyED9BuqADkTBAQQznnthrX+Uiqp4jR/+7bM6gqAZPQKBgQDyt3tyolefwnAd5nID\nC6uLaMXt5Wgr1nKFl4o6apTA61ocqO7HWu2TJr5ptoabruUs1074PR6pZ/Udr4ZA\nz+7u4iNQ/w4lL0UnapTwWyYCSLWoyn8+4IE4Ux87/1LByCxcVzE3fYejftfip52x\nsjjZlacDb7Dme2r7JVBiQdDNMwKBgQC2Bpbqybm6i/UIQtQs+b4Uxv+Jaj4+tf8U\nU5L+IcBM/o8MYSFqTflp1qSnVq0Qc1KRLpin+UGK9of8EZAyiWqpdnzCr90P4LcX\niQQ26/d/bMAyL1jI6vx700j2onR+DrHy5QY7BuLOoevbQS/jl6n2kA+soM06nAjL\n9wDSwJ3v+wKBgQDWfvo0o21mfVHRyr7FHEIcsJoClDMMUrbggrygxWHyX8tB+rUS\nLrQ30AyEpc6ttNFJYHmkfXckZP/EnUK68keIiwaE5PJeQDkQDWvUQekEKbeIlHQB\nYCwyV5sJzakYIcu6Sz/udxwwi79Dybddu0/sUgnHyqP9++HeUuqH+vwI6wKBgCVK\n9lKGH9IzaHFX18abKDFzj9kkdjo86VTNxpjga1ia8s3TfJgd/5KKklNic7SiG/F4\nvXf0nlQNLFEdfBCOjNbJWsg8ZasiHADrZnymHZ/ytPHTN3p6gl4QLKuzHvDQq+6a\ns4sWXxN8oyjZkykq4nyMiVmR3Fo8q6S2J2oGYpVPAoGAdL2JkLEG+8PL4bg5Bx5q\njwQ5Sw6To9Li3z6Ek3U6Que50qTRtS8iPM5t28t+l1GTvtr8+B7/39JVoO2bfFN9\nFlUT9/JD0qMZiU4UgAXJuEJpHk6gMOfiGiDvmyQvxkwq4CTV+qpSZRGTAI+WrTiM\naTKGO88jyk51QoKy5wMGC7U=\n-----END PRIVATE KEY-----\n",
+  "client_email": "jobsy-727@jobsy-385823.iam.gserviceaccount.com",
+  "client_id": "107616875555473907988",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/jobsy-727%40jobsy-385823.iam.gserviceaccount.com"
+}
