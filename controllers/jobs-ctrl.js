@@ -92,7 +92,6 @@ module.exports = {
           });
           currentCompany=await Company.create({ name: companyName,logo:companyLogo,description:companyDecription})
       }  
-      
       let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username });
       if (newJob) {
         console.log('found job');

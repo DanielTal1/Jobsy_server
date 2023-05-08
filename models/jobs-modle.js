@@ -31,13 +31,6 @@ const JOB = new schema({
     }
 })
 
-// // Define a custom method to check if two jobs are equal
-// JOB.methods.isEqual = function(otherJob) {
-//     console.log("in isEqual");
-//     return this.company === otherJob.company &&
-//            this.role === otherJob.role;
-//   };
-
 
 
 module.exports = mongoose.model('JOB', JOB);

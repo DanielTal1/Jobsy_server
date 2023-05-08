@@ -3,10 +3,9 @@ const router = express.Router()
 const controllers = require('../controllers/recommendation-ctrl')
 
 //GET 
-router.get('/',controllers.getRecommendationsByItems)
+router.get('/:id',controllers.getRecommendations)
 
 
-//GET 
-router.get('/users',controllers.getRecommendationsByUsers)
+
 
 module.exports = router;
