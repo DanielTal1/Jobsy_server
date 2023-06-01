@@ -11,12 +11,12 @@ const getUserById = (req, res) => {
     .then((result) => res.send(result))
     .catch((err) => res.status(404).send({ massage: err }));
 };
-
 const postUserMethod = (req, res) => {
   User.create(req.body)
     .then((result) => res.send(result))
     .catch((err) => res.status(404).send({ massage: err }));
 };
+
 
 const putMethod = (req, res) => {
   User.findByIdAndUpdate(req.params.id, req.body)

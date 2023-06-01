@@ -5,8 +5,8 @@ const controllers = require('../controllers/company-ctrl')
 //GET 
 router.get('/',controllers.getAllCompanies)
 
-//GET BY ID 
-router.get('/:id',controllers.getCompanyById)
+//GET BY Name 
+router.get('/:id',controllers.getCompanyByName)
 
 
 // //PUT BY ID

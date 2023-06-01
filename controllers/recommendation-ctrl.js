@@ -123,7 +123,7 @@ module.exports = {
         _id: { $in: recommendations_ids }
       });
       console.log(recommendations);
-      res.status(200).json({ message: "got recommendations successfully", recommendations });
+      res.status(200).json(recommendations);
     } catch (err) {
       console.log(err);
       res.status(500).json(err);

@@ -19,6 +19,7 @@ const JOB = new schema({
     },
     stage:{
         type:String,
+        default:"apply"
     },
     url:{
         type:String,
@@ -29,7 +30,9 @@ const JOB = new schema({
     updatedAt:{
         type:String
     }
-})
+},{
+  timestamps: { createdAt: 'created_at', updatedAt: 'last_updated' }
+});
 
 
 

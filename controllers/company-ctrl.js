@@ -7,8 +7,8 @@ const getAllCompanies =async (req, res) => {
 };
 
 
-const getCompanyById = async (req, res) => {
-    Comapny.findById(req.params.id)
+const getCompanyByName = async (req, res) => {
+    Comapny.find({name:req.params.id})
     .then((result) => res.send(result))
     .catch((err) => res.status(404).send({ massage: err }));
 };
@@ -29,7 +29,7 @@ const deleteMethod = (req, res) => {
 
 module.exports = {
     getAllCompanies,
-    getCompanyById,
+    getCompanyByName,
   putMethod,
   deleteMethod
 };

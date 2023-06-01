@@ -3,9 +3,58 @@ const User = require("../models/users-modle");
 const Company=require("../models/company-modle");
 const  clearbit = require('clearbit')('sk_c4c073d1241ed2e335e71345969606db');
 const Recommendation=require("../models/recommendation-modle");
-
+const axios = require('axios');
 
 const API_KEY = 'AIzaSyAwB8J7qsIdIFTW2Aoh_4jFM0VCLbMFARY';
+
+async function getDescriptionGoogle(companyName) {
+  try {
+    const params = {
+      query: companyName,
+      limit: 1,
+      indent: true,
+      key: API_KEY, // Add the API key here
+      // Other optional parameters can be added here as well
+    };
+
+    const response = await axios.get('https://kgsearch.googleapis.com/v1/entities:search', { params });
+    const itemListElement = response.data.itemListElement;
+
+    if (itemListElement && itemListElement.length > 0) {
+      const entity = response.data.itemListElement[0].result;
+      let shorterDescription = entity.description;
+
+      if (entity.detailedDescription && entity.detailedDescription.articleBody) {
+        const companyDescription = entity.detailedDescription.articleBody;
+
+        if (shorterDescription === undefined) {
+          return "";
+        }
+
+        if (
+          shorterDescription.includes('ompany') ||
+          shorterDescription.includes('echnology') ||
+          shorterDescription.includes('rganization') ||
+          shorterDescription.includes('ecurity') ||
+          shorterDescription.includes('inance') ||
+          shorterDescription.includes('orporation')
+        ) {
+          return companyDescription;
+        } else {
+          return "";
+        }
+      } else {
+        return "";
+      }
+    } else {
+      return "";
+    }
+  } catch (error) {
+    console.error(error);
+    return "";
+  }
+}
+
 
 
 module.exports = {
@@ -23,10 +72,35 @@ module.exports = {
 
 
   getJobsByUsername: async (req, res) => {
-    Job.find({username:req.params.id})
-      .then((job) => res.status(200).json(job))
-      .catch((err) => res.status(500).json(err));
+    Job.find({ username: req.params.id })
+    .sort({ last_updated: -1 }) // Sort by last_updated in descending order
+    .then((jobs) => res.status(200).json(jobs))
+    .catch((err) => res.status(500).json(err));
   },
+
+
+  updateJob : async (req, res) => {
+    const jobId = req.params.id;
+
+    const newStage = req.body.stage;
+    const job = await Job.findById(jobId);
+
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+    job.updatedAt=new Date().toISOString().slice(0, 10);
+    // Update the stage
+    job.stage = newStage;
+    await job.save();
+
+    return res.status(200).json({ message: 'Job updated successfully', job });
+  },
+  
+
+
+
+
+
 
 
   addJob: async (req, res) => {
@@ -40,44 +114,11 @@ module.exports = {
         companyLogo=currentCompany.logo
       } else {
         console.log('created company');
-        let companyDecription="";
-        // const params = {
-        //   query: companyName,
-        //   limit: 1,
-        //   indent: true,
-        //   key: API_KEY, // Add the API key here
-        //   // Other optional parameters can be added here as well
-        // };
-        // await axios.get('https://kgsearch.googleapis.com/v1/entities:search', { params })
-        // .then((res) => {
-        //   const itemListElement = res.data.itemListElement;
-        //   if (itemListElement && itemListElement.length > 0) {
-        //     const entity = res.data.itemListElement[0].result;
-        //     let shorter_decription = entity.description;
-        //     if (entity.detailedDescription && entity.detailedDescription.articleBody) {
-        //       companyDecription = entity.detailedDescription.articleBody;
-        //       companyLogo = entity.image && entity.image.contentUrl;
-        //       if(companyLogo== undefined){
-        //         companyLogo=""
-        //       }
-        //     } else {
-        //       shorter_decription=""
-        //     }
-        //     if (!shorter_decription.includes('ompany') && !shorter_decription.includes('echnology')&&!shorter_decription.includes('organization')&&
-        //     !shorter_decription.includes('security')&&!shorter_decription.includes('finance')&&shorter_description.includes('orporation') ) {
-        //         companyDecription="";
-        //         companyLogo=""
-        //     }
-        //     console.log(`Description: ${shorter_decription}`);
-        //     console.log(`Description: ${companyDecription}`);
-        //     console.log(`Image URL: ${companyLogo}`);
-        //   }
-        //   else{
-        //     console.log(`No results found for query`);
-        //   }
-
-        // })
-
+        companyDecription=await getDescriptionGoogle(companyName);
+        if(companyDecription===undefined){
+          companyDecription=""
+        }
+        console.log(companyDecription)
         var NameToDomain = clearbit.NameToDomain;
         await NameToDomain.find({name: companyName})
           .then(function (result) {
@@ -90,6 +131,9 @@ module.exports = {
           .catch(function (err) {
             console.log('Bad/invalid request, unauthorized, Clearbit error, or failed request');
           });
+          if(companyLogo===null){
+            companyLogo=""
+          }
           currentCompany=await Company.create({ name: companyName,logo:companyLogo,description:companyDecription})
       }  
       let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username });
@@ -113,19 +157,9 @@ module.exports = {
       res.status(500).json(err);
     }
   },
-  updateJob: async (req, res) => {
-    const jobById = await Job.findById(req.params.id);
-    try {
-      if (jobById.userId === req.body.userId) {
-        await Job.updateOne({ $set: req.body });
-        res.status(200).json({ message: "The Job as been updated" });
-      } else {
-        res.status(403).json({ message: "you can update only your Job" });
-      }
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
+
+
+
   deleteJob: async (req, res) => {
     try {
       const jobById = await Job.findById(req.params.id);

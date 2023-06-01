@@ -13,14 +13,6 @@ const Company = new schema({
         min:0,
         default:0
     },
-    comments:{
-        type:Array,
-        default:[]
-    },
-    questionAsked:{
-        type:Array,
-        default:[]
-    },
     logo:{
         type: String,
         default:""
