@@ -12,6 +12,9 @@ router.get('/:id',controllers.getJobsById)
 //GET BY ID 
 router.get('/user/:id',controllers.getJobsByUsername)
 
+
+router.get('/archive/:id',controllers.getArchiveJobsByUsername)
+
 // //POST
 router.post('/', controllers.addJob);
 
@@ -20,6 +23,12 @@ router.post('/', controllers.addJob);
 router.put('/:id' , controllers.updateJob)
 
 // //DELETE BY ID
-router.delete('/:id' , controllers.deleteJob)
+router.delete('/' , controllers.deleteJobs)
+
+// //PUT BY ID
+router.put('/pin/:id' , controllers.updatePins)
+
+// //PUT BY ID
+router.put('/archive/:id' , controllers.updateArchive)
 
 module.exports = router;

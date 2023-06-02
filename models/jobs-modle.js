@@ -29,9 +29,21 @@ const JOB = new schema({
     },
     updatedAt:{
         type:String
-    }
+    },
+    archive:{
+        type:Boolean,
+        default: false
+    },
+    pin:{
+        type:Boolean,
+        default: false
+    },
+    last_updated:{
+        type:Date,
+        defualt:Date.now()
+    },
 },{
-  timestamps: { createdAt: 'created_at', updatedAt: 'last_updated' }
+    timestamps: true
 });
 
 

@@ -55,6 +55,19 @@ async function getDescriptionGoogle(companyName) {
   }
 }
 
+function normalizeDate(){
+  const currentDate = new Date();
+
+    // Get the day, month, and year components
+    const day = currentDate.getDate();
+    const month = currentDate.getMonth() + 1; // January is 0
+    const year = currentDate.getFullYear().toString().slice(-2);
+
+    // Format the date as "dd/mm/yyyy"
+    const formattedDate = `${day}/${month}/${year}`;
+    return formattedDate;
+}
+
 
 
 module.exports = {
@@ -72,11 +85,31 @@ module.exports = {
 
 
   getJobsByUsername: async (req, res) => {
-    Job.find({ username: req.params.id })
-    .sort({ last_updated: -1 }) // Sort by last_updated in descending order
-    .then((jobs) => res.status(200).json(jobs))
-    .catch((err) => res.status(500).json(err));
+    try {
+      const jobs = await Job.find({ username: req.params.id, archive: false })
+        .sort({ pin: -1, last_updated: -1 })
+        .exec();
+  
+      res.status(200).json(jobs);
+    } catch (err) {
+      res.status(500).json(err);
+    }
   },
+
+
+  
+  getArchiveJobsByUsername: async (req, res) => {
+    try {
+      const jobs = await Job.find({ username: req.params.id, archive: true })
+        .sort({ pin: -1, last_updated: -1 })
+        .exec();
+  
+      res.status(200).json(jobs);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+  
 
 
   updateJob : async (req, res) => {
@@ -88,7 +121,12 @@ module.exports = {
     if (!job) {
       return res.status(404).json({ message: 'Job not found' });
     }
-    job.updatedAt=new Date().toISOString().slice(0, 10);
+
+
+    // Update the updatedAt field with the formatted date
+    job.updatedAt =normalizeDate();
+
+    job.last_updated=Date.now();
     // Update the stage
     job.stage = newStage;
     await job.save();
@@ -141,7 +179,7 @@ module.exports = {
         console.log('found job');
       } else {
         console.log('created job');
-        newJob = await Job.create({company:companyName,role:req.body.role,url:req.body.url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:new Date().toISOString().slice(0, 10)});
+        newJob = await Job.create({company:companyName,role:req.body.role,url:req.body.url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate() });
         let newRecommendation = await Recommendation.findOne({ company:companyName,role:req.body.role,location:req.body.location });
         if(newRecommendation){
           console.log('found Recommendation');
@@ -160,17 +198,63 @@ module.exports = {
 
 
 
-  deleteJob: async (req, res) => {
+
+
+
+  deleteJobs: async (req, res) => {
     try {
-      const jobById = await Job.findById(req.params.id);
-    if (jobById._id.toString() == req.params.id) {
-        await jobById.deleteOne();
-        res.status(200).json({ message: "The job as been deleted" });
-      } else {
-        res.status(403).json({ message: "you can delete only your job" });
-      }
-    } catch (err) {
-      res.status(500).json(err);
+      const jobIds = req.body; 
+  
+      // Delete the jobs with the specified IDs
+      await Job.deleteMany({ _id: { $in: jobIds } });
+  
+      res.status(200).json({ message: 'Jobs deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to delete jobs' });
     }
   },
+
+
+  
+  updatePins: async (req, res) => {
+    try {
+      const jobIds = req.body; 
+  
+      const jobs = await Job.find({ _id: { $in: jobIds } });
+  
+      // Update the pins for each job
+      for (const job of jobs) {
+        job.pin = !job.pin; // Toggle the pin attribute
+        await job.save(); // Save the updated job
+      }
+  
+      res.status(200).json({ message: 'Pins updated successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update pins' });
+    }
+  },
+
+
+
+  updateArchive : async (req, res) => {
+    try {
+      const jobIds = req.body;
+  
+      // Find the jobs with the specified IDs
+      const jobs = await Job.find({ _id: { $in: jobIds } });
+  
+      // Update the archive status for each job
+      for (const job of jobs) {
+        job.archive = !job.archive;
+        await job.save(); // Save the updated job
+      }
+  
+      res.status(200).json({ message: 'Archive status updated successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to update archive status' });
+    }
+  },
+
+
+
 };
