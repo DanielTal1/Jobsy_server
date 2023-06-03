@@ -16,6 +16,8 @@ const Comments = new schema({
         type:String,
     },
 
-},)
+},{
+    timestamps: true
+})
 
 module.exports = mongoose.model('Comments', Comments);

@@ -39,11 +39,8 @@ const JOB = new schema({
         default: false
     },
     last_updated:{
-        type:Date,
-        defualt:Date.now()
+        type:Date
     },
-},{
-    timestamps: true
 });
 
 
