@@ -8,6 +8,7 @@ const routerJobs = require('./router/jobs');
 const routerCompany = require('./router/company');
 const routerRecommendation = require('./router/recommendation');
 const routerComment = require('./router/comments');
+const cron = require('./scheduler');
 //const routerQuestionAsked = require('./router/question_asked')
 
 
