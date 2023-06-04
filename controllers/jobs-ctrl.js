@@ -179,7 +179,7 @@ module.exports = {
         console.log('found job');
       } else {
         console.log('created job');
-        newJob = await Job.create({company:companyName,role:req.body.role,url:req.body.url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now() });
+        newJob = await Job.create({company:companyName,role:req.body.role,url:req.body.url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now() });
         let newRecommendation = await Recommendation.findOne({ company:companyName,role:req.body.role,location:req.body.location });
         if(newRecommendation){
           console.log('found Recommendation');
@@ -246,6 +246,7 @@ module.exports = {
       // Update the archive status for each job
       for (const job of jobs) {
         job.archive = !job.archive;
+        job.last_updated=Date.now();
         await job.save(); // Save the updated job
       }
   

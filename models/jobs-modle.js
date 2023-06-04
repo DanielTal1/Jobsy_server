@@ -41,6 +41,9 @@ const JOB = new schema({
     last_updated:{
         type:Date
     },
+    created_at:{
+        type:Date
+    }
 });
 
 
