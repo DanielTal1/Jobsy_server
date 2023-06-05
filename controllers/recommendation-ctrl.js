@@ -99,8 +99,6 @@ async function user_recommendation(username,similarityMatrix,matrix,){
 module.exports = {
   getRecommendations:async (req, res) => {
     try{
-
-
       const [all_users, all_recommendation] = await Promise.all([
         User.find().exec(),
         Recommendation.find().exec()
@@ -112,7 +110,7 @@ module.exports = {
           all_users.forEach((user)=>{
               // const hasRecommendation = user.recommendationId.includes(recommendation._id);
               const count = user.recommendationId.filter(id => id.equals(recommendation._id)).length;
-              matrix[recommendation._id][user.username] = user.recommendationId.filter(id => id.equals(recommendation._id)).length;
+              matrix[recommendation._id][user.username] = count;
           })
       })
       console.log(matrix)

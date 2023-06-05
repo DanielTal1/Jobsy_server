@@ -4,9 +4,9 @@ const Company=require("../models/company-modle");
 const  clearbit = require('clearbit')('sk_c4c073d1241ed2e335e71345969606db');
 const Recommendation=require("../models/recommendation-modle");
 const axios = require('axios');
-
+const admin = require('firebase-admin');
 const API_KEY = 'AIzaSyAwB8J7qsIdIFTW2Aoh_4jFM0VCLbMFARY';
-
+const userTokenMap = require('../userTokenMap');
 async function getDescriptionGoogle(companyName) {
   try {
     const params = {
@@ -66,6 +66,29 @@ function normalizeDate(){
     // Format the date as "dd/mm/yyyy"
     const formattedDate = `${day}/${month}/${year}`;
     return formattedDate;
+}
+
+
+function pushNotification(currentUser){
+  const registrationToken = userTokenMap[currentUser];
+
+  const message = {
+    token: registrationToken,
+    notification: {
+      title: 'Hello from Server',
+      body: 'This is a test message from your Node.js server.',
+    },
+  };
+
+  admin.messaging().send(message)
+    .then((response) => {
+      console.log('Successfully sent message:', response);
+    })
+    .catch((error) => {
+      console.log('Error sending message:', error);
+    });
+    
+
 }
 
 
@@ -190,6 +213,9 @@ module.exports = {
         await currentUser.updateOne({ $push:{ recommendationId: newRecommendation._id }});
       }
       res.status(200).json({ message: "Job added successfully", newJob });
+      if(!req.body.hasOwnProperty('source')){
+        pushNotification(req.body.username);
+      }
     } catch (err) {
       console.log(err);
       res.status(500).json(err);

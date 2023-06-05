@@ -8,8 +8,18 @@ const routerJobs = require('./router/jobs');
 const routerCompany = require('./router/company');
 const routerRecommendation = require('./router/recommendation');
 const routerComment = require('./router/comments');
-const cron = require('./scheduler');
+const admin = require('firebase-admin');
 //const routerQuestionAsked = require('./router/question_asked')
+
+
+
+// Initialize Firebase Admin SDK with your service account credentials
+const serviceAccount = require('./private/jobsy-50d06-firebase-adminsdk-3i4wo-c520cc075c.json'); // Replace with the path to your service account JSON file
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+// Now you can use the Firebase Admin SDK to send FCM notifications, subscribe devices to topics, etc.
 
 
 app.use(express.json())

@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const SECRET_KEY = process.env.SECRET_KEY
+const userTokenMap = require('../userTokenMap');
+
 
 module.exports = {
     register: async (req,res) => {
@@ -23,7 +25,9 @@ module.exports = {
             if (err) return res.status(400).send({message:"err try again"})
             if(!isMatch) return res.status(403).send({message:"Invalid credentials"})
             res.status(200).send({message:"logged in successfully"});
-            
+            if(req.body.hasOwnProperty('token')){
+                userTokenMap[req.body.username]=req.body.token 
+            }
             // jwt.sign({...userItem},SECRET_KEY,{expiresIn:"30m"},(err,token)=>{
             //     if(err) return res.status(400).send({message: "Error logging in user",err})
             //     res.status(200).send({message:"logged in successfully",token});
