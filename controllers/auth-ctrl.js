@@ -17,22 +17,29 @@ module.exports = {
             .catch(err => res.status(500).send({message:"error",err}))
         })
     },
-    login: async (req,res) =>{
-        if(user.exists(req.body.username) == false) return res.status(400).send({message:"User not exist"});
-        const {username,password} = req.body;
-        await user.findOne({username})
-        .then(userItem => bcrypt.compare(password,userItem.password,(err,isMatch)=>{
-            if (err) return res.status(400).send({message:"err try again"})
-            if(!isMatch) return res.status(403).send({message:"Invalid credentials"})
-            res.status(200).send({message:"logged in successfully"});
-            if(req.body.hasOwnProperty('token')){
-                userTokenMap[req.body.username]=req.body.token 
-            }
-            // jwt.sign({...userItem},SECRET_KEY,{expiresIn:"30m"},(err,token)=>{
-            //     if(err) return res.status(400).send({message: "Error logging in user",err})
-            //     res.status(200).send({message:"logged in successfully",token});
-            // })
-        }) )
-        .catch((err)=>{res.status(500).send({message:"Error logging in user"})})
-    }
+    login: async (req, res) => {
+        if (user.exists(req.body.username) == false)
+          return res.status(400).send({ message: "User does not exist" });
+      
+        const { username, password } = req.body;
+        await user
+          .findOne({ username })
+          .then((userItem) =>
+            bcrypt.compare(password, userItem.password, (err, isMatch) => {
+              if (err)
+                return res.status(400).send({ message: "Error, please try again" });
+              if (!isMatch)
+                return res.status(403).send({ message: "Invalid credentials" });
+      
+              res.status(200).send({ message: "logged in successfully" });
+              if (req.body.hasOwnProperty('token')) {
+                userTokenMap[req.body.username] = req.body.token;
+              }
+            })
+          )
+          .catch((err) => {
+            res.status(500).send({ message: "Error logging in user" });
+          });
+      },
+      
 }

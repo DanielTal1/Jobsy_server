@@ -9,6 +9,7 @@ const routerCompany = require('./router/company');
 const routerRecommendation = require('./router/recommendation');
 const routerComment = require('./router/comments');
 const admin = require('firebase-admin');
+const cors = require('cors');
 //const routerQuestionAsked = require('./router/question_asked')
 
 
@@ -21,7 +22,7 @@ admin.initializeApp({
 
 // Now you can use the Firebase Admin SDK to send FCM notifications, subscribe devices to topics, etc.
 
-
+app.use(cors());
 app.use(express.json())
 
 app.use('/auth', routerAuth);
@@ -30,7 +31,7 @@ app.use('/jobs', routerJobs);
 app.use('/company', routerCompany);
 app.use('/recommendation', routerRecommendation);
 app.use('/comments', routerComment);
-//app.use('/question-asked', routerQuestionAsked);
+
 
 app.listen(process.env.PORT , (req,res)=>{
     console.log(`Server is up in ${process.env.PORT} `);

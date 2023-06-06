@@ -5,8 +5,11 @@ const  clearbit = require('clearbit')('sk_c4c073d1241ed2e335e71345969606db');
 const Recommendation=require("../models/recommendation-modle");
 const axios = require('axios');
 const admin = require('firebase-admin');
+const https = require('https');
 const API_KEY = 'AIzaSyAwB8J7qsIdIFTW2Aoh_4jFM0VCLbMFARY';
 const userTokenMap = require('../userTokenMap');
+
+
 async function getDescriptionGoogle(companyName) {
   try {
     const params = {
@@ -23,6 +26,7 @@ async function getDescriptionGoogle(companyName) {
     if (itemListElement && itemListElement.length > 0) {
       const entity = response.data.itemListElement[0].result;
       let shorterDescription = entity.description;
+
 
       if (entity.detailedDescription && entity.detailedDescription.articleBody) {
         const companyDescription = entity.detailedDescription.articleBody;
@@ -71,7 +75,9 @@ function normalizeDate(){
 
 function pushNotification(currentUser){
   const registrationToken = userTokenMap[currentUser];
-
+  if (registrationToken === undefined) {
+    return;
+  }
   const message = {
     token: registrationToken,
     notification: {
@@ -90,6 +96,16 @@ function pushNotification(currentUser){
     
 
 }
+
+
+const checkURL = async (url) => {
+  try {
+    await axios.get(url);
+    return true;
+  } catch (error) {
+    return false;
+  }
+};
 
 
 
@@ -148,7 +164,6 @@ module.exports = {
 
     // Update the updatedAt field with the formatted date
     job.updatedAt =normalizeDate();
-
     job.last_updated=Date.now();
     // Update the stage
     job.stage = newStage;
@@ -175,7 +190,7 @@ module.exports = {
         companyLogo=currentCompany.logo
       } else {
         console.log('created company');
-        companyDecription=await getDescriptionGoogle(companyName);
+        let companyDecription=await getDescriptionGoogle(companyName);
         if(companyDecription===undefined){
           companyDecription=""
         }
@@ -195,6 +210,23 @@ module.exports = {
           if(companyLogo===null){
             companyLogo=""
           }
+          else{
+            try {
+              const isAccessible = await checkURL(companyLogo);
+              if (isAccessible) {
+                console.log('URL is accessible');
+              } else {
+                console.log('URL not accessible');
+                companyLogo = "";
+              }
+            } catch (error) {
+              console.log('Error occurred while checking URL:', error);
+              companyLogo = "";
+            }
+          
+            // Use the updated value of companyLogo here
+            console.log(companyLogo);
+          }
           currentCompany=await Company.create({ name: companyName,logo:companyLogo,description:companyDecription})
       }  
       let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username });
@@ -202,13 +234,20 @@ module.exports = {
         console.log('found job');
       } else {
         console.log('created job');
-        newJob = await Job.create({company:companyName,role:req.body.role,url:req.body.url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now() });
+        let job_url;
+        if(!req.body.hasOwnProperty('url')){
+          job_url="";
+        }
+        else{
+          job_url=req.body.url;
+        }
+        newJob = await Job.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now() });
         let newRecommendation = await Recommendation.findOne({ company:companyName,role:req.body.role,location:req.body.location });
         if(newRecommendation){
           console.log('found Recommendation');
         } else {
           console.log('created Recommendation');
-          newRecommendation= await Recommendation.create({company:companyName,role:req.body.role,url:req.body.url,location:req.body.location,company_logo:companyLogo})
+          newRecommendation= await Recommendation.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,company_logo:companyLogo})
         }
         await currentUser.updateOne({ $push:{ recommendationId: newRecommendation._id }});
       }
@@ -245,7 +284,6 @@ module.exports = {
   updatePins: async (req, res) => {
     try {
       const jobIds = req.body; 
-  
       const jobs = await Job.find({ _id: { $in: jobIds } });
   
       // Update the pins for each job
@@ -253,7 +291,7 @@ module.exports = {
         job.pin = !job.pin; // Toggle the pin attribute
         await job.save(); // Save the updated job
       }
-  
+      await currentUser.updateOne({ $push:{ recommendationId: newRecommendation._id }});
       res.status(200).json({ message: 'Pins updated successfully' });
     } catch (error) {
       res.status(500).json({ error: 'Failed to update pins' });
@@ -275,7 +313,7 @@ module.exports = {
         job.last_updated=Date.now();
         await job.save(); // Save the updated job
       }
-  
+
       res.status(200).json({ message: 'Archive status updated successfully' });
     } catch (error) {
       res.status(500).json({ error: 'Failed to update archive status' });

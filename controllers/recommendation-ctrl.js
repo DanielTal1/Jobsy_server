@@ -89,6 +89,7 @@ async function user_recommendation(username,similarityMatrix,matrix,){
   });
   // Sort the recommended items by score and return the top n items
   const recommendedItems = Object.keys(itemScores)
+    .filter((itemId) => !user_jobs.includes(itemId))
     .sort((a, b) => itemScores[b] - itemScores[a])
     .slice(0, topN);
   console.log(recommendedItems)
