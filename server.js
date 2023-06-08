@@ -10,6 +10,7 @@ const routerRecommendation = require('./router/recommendation');
 const routerComment = require('./router/comments');
 const admin = require('firebase-admin');
 const cors = require('cors');
+const { spawn } = require('child_process');
 //const routerQuestionAsked = require('./router/question_asked')
 
 
@@ -33,6 +34,21 @@ app.use('/recommendation', routerRecommendation);
 app.use('/comments', routerComment);
 
 
+
+const jobScheduler = spawn('node', ['scheduler.js'], {
+  detached: true,
+  stdio: 'ignore',
+});
+
+// Detach the child process and allow it to run independently
+jobScheduler.unref();
+
+console.log('Job scheduler started in a separate process.');
+
+
 app.listen(process.env.PORT , (req,res)=>{
     console.log(`Server is up in ${process.env.PORT} `);
     })
+
+
+

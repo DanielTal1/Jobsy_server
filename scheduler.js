@@ -4,7 +4,6 @@ const Job = require('./models/jobs-modle');
 // Schedule the task to run every day at midnight (0:00)
 cron.schedule('00 02 * * *', async () => {
   try {
-    const currentDate = new Date();
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 

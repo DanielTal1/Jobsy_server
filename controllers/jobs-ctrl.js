@@ -81,8 +81,8 @@ function pushNotification(currentUser){
   const message = {
     token: registrationToken,
     notification: {
-      title: 'Hello from Server',
-      body: 'This is a test message from your Node.js server.',
+      title: 'Jobsy: new Application',
+      body: 'New Job added in Jobsy chrome Extension',
     },
   };
 
@@ -151,26 +151,35 @@ module.exports = {
   
 
 
-  updateJob : async (req, res) => {
+  updateJob: async (req, res) => {
     const jobId = req.params.id;
-
     const newStage = req.body.stage;
     const job = await Job.findById(jobId);
-
+  
     if (!job) {
       return res.status(404).json({ message: 'Job not found' });
     }
-
-
+  
     // Update the updatedAt field with the formatted date
-    job.updatedAt =normalizeDate();
-    job.last_updated=Date.now();
+    job.updatedAt = normalizeDate();
+    job.last_updated = Date.now();
+  
+  
+    const nextInterview = new Date(req.body.next_interview);
+    nextInterview.setHours(8, 0, 0); // Set the time to 08:00
+
+    // Add 1 day to the date
+    nextInterview.setDate(nextInterview.getDate());
+
+    job.next_interview = nextInterview;
+  
     // Update the stage
     job.stage = newStage;
     await job.save();
-
+  
     return res.status(200).json({ message: 'Job updated successfully', job });
   },
+  
   
 
 
@@ -241,7 +250,7 @@ module.exports = {
         else{
           job_url=req.body.url;
         }
-        newJob = await Job.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now() });
+        newJob = await Job.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now(),next_interview:Date.now() });
         let newRecommendation = await Recommendation.findOne({ company:companyName,role:req.body.role,location:req.body.location });
         if(newRecommendation){
           console.log('found Recommendation');

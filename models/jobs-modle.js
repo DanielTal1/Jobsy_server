@@ -43,7 +43,11 @@ const JOB = new schema({
     },
     created_at:{
         type:Date
+    },
+    next_interview:{
+        type:Date,
     }
+
 });
 
 
