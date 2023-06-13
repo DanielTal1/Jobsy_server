@@ -8,6 +8,10 @@ const getAllCompanies =async (req, res) => {
 
 
 const getCompanyByName = async (req, res) => {
+    const companyExists = await Comapny.exists({ name: req.params.id });
+    if (!companyExists) {
+      return res.status(404).json({ message: 'Company does not exist' });
+    }
     Comapny.find({name:req.params.id})
     .then((result) => res.send(result))
     .catch((err) => res.status(404).send({ massage: err }));

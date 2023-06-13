@@ -99,6 +99,10 @@ async function user_recommendation(username,similarityMatrix,matrix,){
 
 module.exports = {
   getRecommendations:async (req, res) => {
+    const userExists = await User.exists({ username:req.params.id });
+    if (!userExists) {
+      return res.status(404).json({ message: 'User does not exist' });
+    }
     try{
       const [all_users, all_recommendation] = await Promise.all([
         User.find().exec(),

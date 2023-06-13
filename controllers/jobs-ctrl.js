@@ -241,6 +241,8 @@ module.exports = {
       let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username });
       if (newJob) {
         console.log('found job');
+        res.status(400).json({ message: "Job already exists", newJob });
+        return;
       } else {
         console.log('created job');
         let job_url;
@@ -259,8 +261,8 @@ module.exports = {
           newRecommendation= await Recommendation.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,company_logo:companyLogo})
         }
         await currentUser.updateOne({ $push:{ recommendationId: newRecommendation._id }});
+        res.status(200).json({ message: "Job added successfully", newJob });
       }
-      res.status(200).json({ message: "Job added successfully", newJob });
       if(!req.body.hasOwnProperty('source')){
         pushNotification(req.body.username);
       }
@@ -300,7 +302,6 @@ module.exports = {
         job.pin = !job.pin; // Toggle the pin attribute
         await job.save(); // Save the updated job
       }
-      await currentUser.updateOne({ $push:{ recommendationId: newRecommendation._id }});
       res.status(200).json({ message: 'Pins updated successfully' });
     } catch (error) {
       res.status(500).json({ error: 'Failed to update pins' });

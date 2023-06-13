@@ -8,8 +8,10 @@ const userTokenMap = require('../userTokenMap');
 
 module.exports = {
     register: async (req,res) => {
-        if(await user.exists({username:req.body.username}) == true) return res.status(400).send({message:"username already exists"});
-        bcrypt.hash(req.body.password,10,async (err,hashPassword)=>{
+      if (await user.exists({ username: req.body.username })) {
+        return res.status(400).send({ message: "username already exists" });
+      }
+      bcrypt.hash(req.body.password,10,async (err,hashPassword)=>{
             if(err) return res.status(403).send({message: err.message });
             req.body.password = hashPassword;
             await user.create(req.body)
@@ -18,9 +20,9 @@ module.exports = {
         })
     },
     login: async (req, res) => {
-        if (user.exists(req.body.username) == false)
+      if (!await user.exists({ username: req.body.username })){
           return res.status(400).send({ message: "User does not exist" });
-      
+        }
         const { username, password } = req.body;
         await user
           .findOne({ username })
