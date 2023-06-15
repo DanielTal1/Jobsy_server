@@ -65,7 +65,7 @@ async function user_recommendation(username,similarityMatrix,matrix,){
   const topK=5
   const topN=25
   const currentUser=await User.findOne({username:username}).exec();
-  const user_jobs = currentUser.recommendationId;
+  const user_jobs = Array.from(currentUser.recommendationId.keys());
   // Calculate the weighted scores for each item
   const itemScores = {};
   console.log(user_jobs)
@@ -113,8 +113,7 @@ module.exports = {
       all_recommendation.forEach((recommendation)=>{
           matrix[recommendation._id] = {};
           all_users.forEach((user)=>{
-              // const hasRecommendation = user.recommendationId.includes(recommendation._id);
-              const count = user.recommendationId.filter(id => id.equals(recommendation._id)).length;
+              const count = user.recommendationId.get(recommendation._id) || 0;
               matrix[recommendation._id][user.username] = count;
           })
       })

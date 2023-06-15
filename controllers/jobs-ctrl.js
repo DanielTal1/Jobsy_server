@@ -98,6 +98,36 @@ function pushNotification(currentUser){
 }
 
 
+async function addRecommendationCount (jobId) {
+  const currentJob = await Job.findById(jobId);
+  if (!currentJob) {
+    console.log('Job not found');
+    return;
+  }
+  const currentUsername = currentJob.username;
+  currentUser=User.findOne({username:currentUsername});
+  if(!currentUser){
+    console.log('User not found');
+    return;
+  }
+  const currentCompany=currentJob.company;
+  const currentRole=currentJob.role;
+  const currentLocation=currentJob.location;
+  const currentRecommendation = await Recommendation.findOne({ company:currentCompany,role:currentRole,location:currentLocation });
+  if(!currentRecommendation){
+    console.log('Recommendation not found');
+    return;
+  }
+  await currentUser.findOneAndUpdate(
+    { },
+    { $inc: { [`recommendationId.${currentRecommendation._id}`]: 1 } },
+    { upsert: true }
+  );
+
+
+}
+
+
 const checkURL = async (url) => {
   try {
     await axios.get(url);
@@ -163,8 +193,7 @@ module.exports = {
     // Update the updatedAt field with the formatted date
     job.updatedAt = normalizeDate();
     job.last_updated = Date.now();
-  
-  
+    addRecommendationCount(jobId);
     const nextInterview = new Date(req.body.next_interview);
     nextInterview.setHours(8, 0, 0); // Set the time to 08:00
 
@@ -260,7 +289,11 @@ module.exports = {
           console.log('created Recommendation');
           newRecommendation= await Recommendation.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,company_logo:companyLogo})
         }
-        await currentUser.updateOne({ $push:{ recommendationId: newRecommendation._id }});
+        await currentUser.findOneAndUpdate(
+          { },
+          { $inc: { [`recommendationId.${newRecommendation._id}`]: 1 } },
+          { upsert: true }
+        );
         res.status(200).json({ message: "Job added successfully", newJob });
       }
       if(!req.body.hasOwnProperty('source')){
@@ -280,10 +313,8 @@ module.exports = {
   deleteJobs: async (req, res) => {
     try {
       const jobIds = req.body; 
-  
       // Delete the jobs with the specified IDs
       await Job.deleteMany({ _id: { $in: jobIds } });
-  
       res.status(200).json({ message: 'Jobs deleted successfully' });
     } catch (error) {
       res.status(500).json({ error: 'Failed to delete jobs' });
@@ -301,7 +332,11 @@ module.exports = {
       for (const job of jobs) {
         job.pin = !job.pin; // Toggle the pin attribute
         await job.save(); // Save the updated job
+        if(job.pin){
+          addRecommendationCount(job._id);
+        }
       }
+
       res.status(200).json({ message: 'Pins updated successfully' });
     } catch (error) {
       res.status(500).json({ error: 'Failed to update pins' });

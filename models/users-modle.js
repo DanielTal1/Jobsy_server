@@ -16,8 +16,9 @@ const User = new schema({
         max:12
     },
     recommendationId:{
-        type:Array,
-        default:[]
+        type: Map,
+        of: Number,
+        default: {},
     },
 })
 
