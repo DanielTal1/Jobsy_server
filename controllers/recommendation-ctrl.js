@@ -38,11 +38,11 @@ function JaccardSimilarity(matrix){
 
 function cosineSimilarity(matrix){
   const similarityMatrix = {};
-  for (let jobA in matrix) {
-    similarityMatrix[jobA] = {};
-    for (let jobB in matrix) {
-      if (jobA !== jobB) {
-        similarityMatrix[jobA][jobB] = cosineHelper(matrix[jobA], matrix[jobB]);
+  for (let itemA in matrix) {
+    similarityMatrix[itemA] = {};
+    for (let itemB in matrix) {
+      if (itemA !== itemB) {
+        similarityMatrix[itemA][itemB] = cosineHelper(matrix[itemA], matrix[itemB]);
       }
     }
   }
@@ -50,18 +50,18 @@ function cosineSimilarity(matrix){
 }
 
 
-function getTopKSimilarItems(itemId, similarityMatrix, k) {
+function getTopKSimilarItems(item, similarityMatrix, k) {
   // Sort the items by similarity score and return the top k items
-  const similarItems = Object.keys(similarityMatrix[itemId])
-    .filter(id => id !== itemId)
-    .sort((a, b) => similarityMatrix[itemId][b] - similarityMatrix[itemId][a])
+  const similarItems = Object.keys(similarityMatrix[item])
+    .filter(id => id !== item)
+    .sort((a, b) => similarityMatrix[item][b] - similarityMatrix[item][a])
     .slice(0, k);
 
   return similarItems;
 }
 
 
-async function user_recommendation(username,similarityMatrix,matrix,){
+async function item_recommendations(username,similarityMatrix,matrix,){
   const topK=5
   const topN=25
   const currentUser=await User.findOne({username:username}).exec();
@@ -97,6 +97,39 @@ async function user_recommendation(username,similarityMatrix,matrix,){
 }
 
 
+
+
+async function user_recommendation(username,similarityMatrix,matrix,){
+  const topK=5
+  const topN=25
+  // Calculate the weighted scores for each item
+  const itemScores = {};
+  const similarUsers = getTopKSimilarItems(username, similarityMatrix, topK);
+  const items = Object.keys(matrix[username]);
+  const itemsNotInteracted = items.filter(item => matrix[username][item] === undefined || matrix[username][item] === 0);
+  // Calculate the weighted score for each similar item
+  for (const item of itemsNotInteracted) {
+    let score = 0;
+    for (const similarUser of similarUsers) {
+      const similarity = similarityMatrix[username][similarUser];
+      const interaction = matrix[similarUser][item] || 0;
+      score += similarity * interaction;
+    }
+    itemScores[item] = score
+  }
+  
+  const recommendedItems = Object.keys(itemScores)
+  .sort((a, b) => itemScores[b] - itemScores[a])
+  .slice(0, topN);
+  console.log(recommendedItems);
+  return recommendedItems;
+
+    
+
+    
+}
+
+
 module.exports = {
   getRecommendations:async (req, res) => {
     const userExists = await User.exists({ username:req.params.id });
@@ -115,6 +148,40 @@ module.exports = {
           all_users.forEach((user)=>{
               const count = user.recommendationId.get(recommendation._id) || 0;
               matrix[recommendation._id][user.username] = count;
+          })
+      })
+      console.log(matrix)
+      const similarityMatrix=cosineSimilarity(matrix)
+      console.log(similarityMatrix);
+      const recommendations_ids = await item_recommendations(req.params.id,similarityMatrix,matrix);
+      const recommendations = await Recommendation.find({
+        _id: { $in: recommendations_ids }
+      });
+      console.log(recommendations);
+      res.status(200).json(recommendations);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json(err);
+    } 
+  },
+  getRecommendationsUser:async (req, res) => {
+    const userExists = await User.exists({ username:req.params.id });
+    if (!userExists) {
+      return res.status(404).json({ message: 'User does not exist' });
+    }
+    try{
+      const [all_users, all_recommendation] = await Promise.all([
+        User.find().exec(),
+        Recommendation.find().exec()
+      ]);
+      console.log(all_recommendation);
+      // Create the user-job interaction matrix
+      const matrix = {};
+      all_users.forEach((user)=>{
+          matrix[user.username] = {};
+          all_recommendation.forEach((recommendation)=>{
+              const count = user.recommendationId.get(recommendation._id) || 0;
+              matrix[user.username][recommendation._id] = count;
           })
       })
       console.log(matrix)

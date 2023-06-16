@@ -332,9 +332,6 @@ module.exports = {
       for (const job of jobs) {
         job.pin = !job.pin; // Toggle the pin attribute
         await job.save(); // Save the updated job
-        if(job.pin){
-          addRecommendationCount(job._id);
-        }
       }
 
       res.status(200).json({ message: 'Pins updated successfully' });
