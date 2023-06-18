@@ -118,12 +118,21 @@ def test_create_job():
 
 
 def test_create_job_exists():
+    # get all the jobs of a user
+    base_url = 'http://localhost:3000'
+    username = 'ravid'
+    initial_url = f'{base_url}/jobs/user/{username}'
+    initial_response = requests.get(initial_url)
+    assert initial_response.status_code == 200
+    initial_data = initial_response.json()
+    first_job = initial_data[0]
+
     url = 'http://localhost:3000/jobs'
     data = {
         'username': 'ravid',
-        'company': 'cognyte',
-        'role': 'developer',  # make sure to change
-        'location': 'ramat gan',
+        'company': first_job['company'],
+        'role': first_job['role'],
+        'location': first_job['location'],
         'url': '',
         'source': 0
     }
@@ -132,9 +141,19 @@ def test_create_job_exists():
 
 
 def test_update_pins():
+    # get all the jobs of a user
+    base_url = 'http://localhost:3000'
+    username = 'ravid'
+    initial_url = f'{base_url}/jobs/user/{username}'
+    initial_response = requests.get(initial_url)
+    assert initial_response.status_code == 200
+    initial_data = initial_response.json()
+
+    # get the id of the first job
+    first_job_id = initial_data[0]['_id']
     base_url = 'http://localhost:3000'
     url = f'{base_url}/jobs/pin/0'
-    job_ids = ['6481a65a89d8d4e30f6a6c6a']
+    job_ids = [first_job_id]
     headers = {'Content-Type': 'application/json'}
     data = json.dumps(job_ids)
     response = requests.put(url, headers=headers, data=data)
@@ -151,9 +170,19 @@ def test_update_pins_not_exist():
 
 
 def test_update_archive():
+    # get all the jobs of a user
+    base_url = 'http://localhost:3000'
+    username = 'ravid'
+    initial_url = f'{base_url}/jobs/user/{username}'
+    initial_response = requests.get(initial_url)
+    assert initial_response.status_code == 200
+    initial_data = initial_response.json()
+    # get the id of the first job
+    first_job_id = initial_data[0]['_id']
+
     base_url = 'http://localhost:3000'
     url = f'{base_url}/jobs/archive/0'
-    job_ids = ['6481a65a89d8d4e30f6a6c6a']
+    job_ids = [first_job_id]
     headers = {'Content-Type': 'application/json'}
     data = json.dumps(job_ids)
     response = requests.put(url, headers=headers, data=data)
