@@ -7,12 +7,6 @@ const Company = new schema({
         required: true,
         unique:true
     },
-    rating:{
-        type: Number,
-        max:10,
-        min:0,
-        default:0
-    },
     logo:{
         type: String,
         default:""

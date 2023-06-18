@@ -10,6 +10,7 @@ module.exports = {
       .catch((err) => res.status(500).json(err));
   },
 
+  //get comments of a company by the company name
   getCommentsByCompanyName: async (req, res) => {
     const companyExists = await Company.exists({ name: req.params.id });
     if (!companyExists) {
@@ -22,18 +23,15 @@ module.exports = {
   },
   
 
+  //add comment to a company given the company name,username,role and text
   addComment: async (req, res) => {
-    // Check if the company exists in the Company table
+    //check if the company exists in the Company table
     const companyExists = await Company.exists({ name: req.body.company });
-
-    // Check if the user exists in the Users table
+    //check if the user exists in the Users table
     const userExists = await User.exists({ username:req.body.username });
-
     if (!companyExists || !userExists) {
       return res.status(500).json({ message: 'Company or user does not exist' });
     }
-
-
     Comments.create(req.body)
       .then(() => res.status(200).send("successfull"))
       .catch((err) => res.status(404).send({ massage: err }));

@@ -6,7 +6,7 @@ const getAllCompanies =async (req, res) => {
     .catch((err) => res.status(404).send({ massage: err }));
 };
 
-
+//get the company from it's name
 const getCompanyByName = async (req, res) => {
     const companyExists = await Comapny.exists({ name: req.params.id });
     if (!companyExists) {

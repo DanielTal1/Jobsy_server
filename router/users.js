@@ -12,7 +12,6 @@ router.get('/:id',controllers.getUserById)
 router.post('/', controllers.postUserMethod);
 
 
-
 // //PUT BY ID
 router.put('/:id' , controllers.putMethod)
 

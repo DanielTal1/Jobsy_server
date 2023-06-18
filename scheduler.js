@@ -1,19 +1,19 @@
 const cron = require('node-cron');
 const Job = require('./models/jobs-modle');
 
-// Schedule the task to run every day at midnight (0:00)
+//schedule the task to run every day at 2 am.
 cron.schedule('00 02 * * *', async () => {
   try {
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
 
-    // Find jobs that haven't been updated for a month
+    //finding jobs that haven't been updated for a month
     const jobsToArchive = await Job.find({
       last_updated: { $lt: oneMonthAgo },
       archive: false,
     });
 
-    // Archive the jobs by setting the "archive" attribute to true
+    //set the archive attribute of those jobs to true
     await Job.updateMany(
       { _id: { $in: jobsToArchive.map((job) => job._id) } },
       { $set: { archive: true } }
@@ -27,5 +27,5 @@ cron.schedule('00 02 * * *', async () => {
 
 console.log('Job archive scheduler started.');
 
-// Keep the script running
+//keeps the script running
 process.stdin.resume();

@@ -9,32 +9,32 @@ const https = require('https');
 const API_KEY = 'AIzaSyAwB8J7qsIdIFTW2Aoh_4jFM0VCLbMFARY';
 const userTokenMap = require('../userTokenMap');
 
-
+//Function to get the description of a company using Google Knowledge Graph API
 async function getDescriptionGoogle(companyName) {
   try {
+    //set up the parameters for the API request
     const params = {
       query: companyName,
       limit: 1,
       indent: true,
-      key: API_KEY, // Add the API key here
-      // Other optional parameters can be added here as well
+      key: API_KEY, 
     };
 
     const response = await axios.get('https://kgsearch.googleapis.com/v1/entities:search', { params });
     const itemListElement = response.data.itemListElement;
-
+    //checking if api return result
     if (itemListElement && itemListElement.length > 0) {
       const entity = response.data.itemListElement[0].result;
       let shorterDescription = entity.description;
-
-
+      
+      //checking if there is detailedDescription in result
       if (entity.detailedDescription && entity.detailedDescription.articleBody) {
         const companyDescription = entity.detailedDescription.articleBody;
 
         if (shorterDescription === undefined) {
           return "";
         }
-
+        //checking for values inside shortDescription
         if (
           shorterDescription.includes('ompany') ||
           shorterDescription.includes('echnology') ||
@@ -59,20 +59,21 @@ async function getDescriptionGoogle(companyName) {
   }
 }
 
+//normalize the date to "dd/mm/yyyy" format
 function normalizeDate(){
   const currentDate = new Date();
 
-    // Get the day, month, and year components
+    //get the day, month, and year components
     const day = currentDate.getDate();
-    const month = currentDate.getMonth() + 1; // January is 0
+    const month = currentDate.getMonth() + 1; //starts from 0
     const year = currentDate.getFullYear().toString().slice(-2);
 
-    // Format the date as "dd/mm/yyyy"
+    //format the date as "dd/mm/yyyy"
     const formattedDate = `${day}/${month}/${year}`;
     return formattedDate;
 }
 
-
+//function to push a notification to a user using firebase cloud messaging
 function pushNotification(currentUser){
   const registrationToken = userTokenMap[currentUser];
   if (registrationToken === undefined) {
@@ -97,7 +98,7 @@ function pushNotification(currentUser){
 
 }
 
-
+//Function to increment the recommendation count for a job
 async function addRecommendationCount (jobId) {
   const currentJob = await Job.findById(jobId);
   if (!currentJob) {
@@ -118,6 +119,7 @@ async function addRecommendationCount (jobId) {
     console.log('Recommendation not found');
     return;
   }
+  //increase the value of jobId by 1
   await currentUser.findOneAndUpdate(
     { },
     { $inc: { [`recommendationId.${currentRecommendation._id}`]: 1 } },
@@ -128,6 +130,7 @@ async function addRecommendationCount (jobId) {
 }
 
 
+//function to check if a url is accessible
 const checkURL = async (url) => {
   try {
     await axios.get(url);
@@ -140,25 +143,25 @@ const checkURL = async (url) => {
 
 
 module.exports = {
+  //retrieve all jobs
   getAllJobs: async (req, res) => { 
     await Job.find()
       .then((job) => res.status(200).json(job))
       .catch((err) => res.status(500).json(err));
   },
-
+  //retrieve job by id
   getJobsById: async (req, res) => {
     await Job.findById(req.params.id)
       .then((job) => res.status(200).json(job))
       .catch((err) => res.status(500).json(err));
   },
 
-
+  //retrieves all the jobs of a user with username- only non archive
   getJobsByUsername: async (req, res) => {
     try {
       const jobs = await Job.find({ username: req.params.id, archive: false })
-        .sort({ pin: -1, last_updated: -1 })
+        .sort({ pin: -1, last_updated: -1 })//jobs with pin are first, the order is by last updated date
         .exec();
-  
       res.status(200).json(jobs);
     } catch (err) {
       res.status(500).json(err);
@@ -166,7 +169,7 @@ module.exports = {
   },
 
 
-  
+  //retrieves all the archive jobs of a user with username
   getArchiveJobsByUsername: async (req, res) => {
     try {
       const jobs = await Job.find({ username: req.params.id, archive: true })
@@ -180,7 +183,8 @@ module.exports = {
   },
   
 
-
+  //update job stage and change the last_updated and nextInterview values
+  //everytime updating a stage the recommendation count is increased
   updateJob: async (req, res) => {
     const jobId = req.params.id;
     const newStage = req.body.stage;
@@ -193,19 +197,14 @@ module.exports = {
     // Update the updatedAt field with the formatted date
     job.updatedAt = normalizeDate();
     job.last_updated = Date.now();
-    addRecommendationCount(jobId);
+    await addRecommendationCount(jobId);
     const nextInterview = new Date(req.body.next_interview);
-    nextInterview.setHours(8, 0, 0); // Set the time to 08:00
-
-    // Add 1 day to the date
-    nextInterview.setDate(nextInterview.getDate());
-
+    nextInterview.setHours(8, 0, 0); //set the time to 08:00 for convenience
+    //nextInterview.setDate(nextInterview.getDate());
     job.next_interview = nextInterview;
-  
     // Update the stage
     job.stage = newStage;
-    await job.save();
-  
+    await job.save(); //save the changes in job
     return res.status(200).json({ message: 'Job updated successfully', job });
   },
   
@@ -216,18 +215,21 @@ module.exports = {
 
 
 
-
+   //add a new job
   addJob: async (req, res) => {
     try {
+      //find user
       currentUser=User.findOne({username:req.body.username});
       let companyLogo="";
       const companyName=req.body.company
       let currentCompany = await Company.findOne({ name: companyName });
+      //find the currentCompany or create it
       if (currentCompany) {
         console.log('found company');
         companyLogo=currentCompany.logo
       } else {
         console.log('created company');
+        //get description and logo
         let companyDecription=await getDescriptionGoogle(companyName);
         if(companyDecription===undefined){
           companyDecription=""
@@ -261,13 +263,12 @@ module.exports = {
               console.log('Error occurred while checking URL:', error);
               companyLogo = "";
             }
-          
-            // Use the updated value of companyLogo here
             console.log(companyLogo);
           }
           currentCompany=await Company.create({ name: companyName,logo:companyLogo,description:companyDecription})
       }  
-      let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username });
+      //find the job for the current user or create it
+      let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username }); 
       if (newJob) {
         console.log('found job');
         res.status(400).json({ message: "Job already exists", newJob });
@@ -282,6 +283,7 @@ module.exports = {
           job_url=req.body.url;
         }
         newJob = await Job.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now(),next_interview:Date.now() });
+        //find the current recommendation or create it 
         let newRecommendation = await Recommendation.findOne({ company:companyName,role:req.body.role,location:req.body.location });
         if(newRecommendation){
           console.log('found Recommendation');
@@ -296,6 +298,7 @@ module.exports = {
         );
         res.status(200).json({ message: "Job added successfully", newJob });
       }
+      //adding job from chrome extension doesn't have source property, adding from app have source property
       if(!req.body.hasOwnProperty('source')){
         pushNotification(req.body.username);
       }
@@ -309,11 +312,11 @@ module.exports = {
 
 
 
-
+  //delete list of job given their id's
   deleteJobs: async (req, res) => {
     try {
       const jobIds = req.body; 
-      // Delete the jobs with the specified IDs
+      //delete the jobs with the specified IDs
       await Job.deleteMany({ _id: { $in: jobIds } });
       res.status(200).json({ message: 'Jobs deleted successfully' });
     } catch (error) {
@@ -322,16 +325,16 @@ module.exports = {
   },
 
 
-  
+  //update list of jobs pin given their id's
   updatePins: async (req, res) => {
     try {
       const jobIds = req.body; 
       const jobs = await Job.find({ _id: { $in: jobIds } });
   
-      // Update the pins for each job
+      //update the pins for each job
       for (const job of jobs) {
-        job.pin = !job.pin; // Toggle the pin attribute
-        await job.save(); // Save the updated job
+        job.pin = !job.pin; //toggle the pin attribute
+        await job.save(); //save the updated job
       }
 
       res.status(200).json({ message: 'Pins updated successfully' });
@@ -341,19 +344,19 @@ module.exports = {
   },
 
 
-
+  //update list of jobs archive property given their id's
   updateArchive : async (req, res) => {
     try {
       const jobIds = req.body;
   
-      // Find the jobs with the specified IDs
+      //find the jobs with the specified IDs
       const jobs = await Job.find({ _id: { $in: jobIds } });
   
-      // Update the archive status for each job
+      //update the archive status for each job
       for (const job of jobs) {
         job.archive = !job.archive;
-        job.last_updated=Date.now();
-        await job.save(); // Save the updated job
+        job.last_updated=Date.now(); //update last_updated value
+        await job.save(); //save the updated job
       }
 
       res.status(200).json({ message: 'Archive status updated successfully' });
