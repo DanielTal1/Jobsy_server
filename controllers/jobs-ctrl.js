@@ -221,7 +221,8 @@ module.exports = {
       //find user
       currentUser=User.findOne({username:req.body.username});
       let companyLogo="";
-      const companyName=req.body.company
+      var companyName=req.body.company
+      companyName = companyName.charAt(0).toUpperCase() + companyName.slice(1).toLowerCase();
       let currentCompany = await Company.findOne({ name: companyName });
       //find the currentCompany or create it
       if (currentCompany) {
@@ -235,7 +236,7 @@ module.exports = {
           companyDecription=""
         }
         console.log(companyDecription)
-        var NameToDomain = clearbit.NameToDomain;
+        const NameToDomain = clearbit.NameToDomain;
         await NameToDomain.find({name: companyName})
           .then(function (result) {
             companyLogo=result.logo
@@ -268,7 +269,11 @@ module.exports = {
           currentCompany=await Company.create({ name: companyName,logo:companyLogo,description:companyDecription})
       }  
       //find the job for the current user or create it
-      let newJob = await Job.findOne({ company:companyName,role:req.body.role,location:req.body.location,username:req.body.username }); 
+      var role=req.body.role;
+      role = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+      var location=req.body.location;
+      location = location.charAt(0).toUpperCase() + location.slice(1).toLowerCase();
+      let newJob = await Job.findOne({ company:companyName,role:role,location:location,username:req.body.username }); 
       if (newJob) {
         console.log('found job');
         res.status(400).json({ message: "Job already exists", newJob });
@@ -282,14 +287,14 @@ module.exports = {
         else{
           job_url=req.body.url;
         }
-        newJob = await Job.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now(),next_interview:Date.now() });
+        newJob = await Job.create({company:companyName,role:role,url:job_url,location:location,stage:'apply',username:req.body.username,company_logo:companyLogo,updatedAt:normalizeDate(),last_updated:Date.now(),created_at:Date.now(),next_interview:Date.now() });
         //find the current recommendation or create it 
-        let newRecommendation = await Recommendation.findOne({ company:companyName,role:req.body.role,location:req.body.location });
+        let newRecommendation = await Recommendation.findOne({ company:companyName,role:role,location:location });
         if(newRecommendation){
           console.log('found Recommendation');
         } else {
           console.log('created Recommendation');
-          newRecommendation= await Recommendation.create({company:companyName,role:req.body.role,url:job_url,location:req.body.location,company_logo:companyLogo})
+          newRecommendation= await Recommendation.create({company:companyName,role:role,url:job_url,location:location,company_logo:companyLogo})
         }
         await currentUser.findOneAndUpdate(
           { },
