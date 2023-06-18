@@ -73,8 +73,16 @@ def test_get_user_archive_jobs():
 
 
 def test_update_job():
+    #get all the jobs of a user
     base_url = 'http://localhost:3000'
-    job_id = '648e64d96e5476c743c735bb' #make sure to change the id
+    username = 'ravid'
+    initial_url = f'{base_url}/jobs/user/{username}'
+    initial_response = requests.get(initial_url)
+    assert initial_response.status_code == 200
+    initial_data = initial_response.json()
+
+    #get the id of the first job
+    job_id = initial_data[0]['_id']
     url = f'{base_url}/jobs/{job_id}'
     # Calculate the interview date as today plus one month
     interview_date = datetime.now() + timedelta(days=30)
