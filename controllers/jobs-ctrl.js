@@ -222,7 +222,11 @@ module.exports = {
       currentUser=User.findOne({username:req.body.username});
       let companyLogo="";
       var companyName=req.body.company
-      companyName = companyName.charAt(0).toUpperCase() + companyName.slice(1).toLowerCase();
+      var words = companyName.split(" ");
+      for (var i = 0; i < words.length; i++) {
+        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
+      }
+      var companyName = words.join(" ");
       let currentCompany = await Company.findOne({ name: companyName });
       //find the currentCompany or create it
       if (currentCompany) {
@@ -270,9 +274,17 @@ module.exports = {
       }  
       //find the job for the current user or create it
       var role=req.body.role;
-      role = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();
+      var words = role.split(" ");
+      for (var i = 0; i < words.length; i++) {
+        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
+      }
+      var role = words.join(" ");
       var location=req.body.location;
-      location = location.charAt(0).toUpperCase() + location.slice(1).toLowerCase();
+      var words = location.split(" ");
+      for (var i = 0; i < words.length; i++) {
+        words[i] = words[i].charAt(0).toUpperCase() + words[i].slice(1).toLowerCase();
+      }
+      var location = words.join(" ");
       let newJob = await Job.findOne({ company:companyName,role:role,location:location,username:req.body.username }); 
       if (newJob) {
         console.log('found job');
